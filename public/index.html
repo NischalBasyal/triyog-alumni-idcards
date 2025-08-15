@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Triyog Alumni Society</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md text-center">
+        <h1 class="text-2xl font-bold mb-4">Welcome to Triyog Alumni Society</h1>
+        <p class="mb-4">Enter your unique code to get your ID card.</p>
+        <div id="alert" class="hidden p-3 mb-4 rounded text-white"></div>
+        <form id="codeForm" class="flex flex-col gap-3">
+            <input type="text" id="codeInput" maxlength="6" placeholder="Enter 6-character code"
+                class="border p-2 rounded w-full text-center tracking-widest uppercase" required />
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">
+                Get ID Card
+            </button>
+        </form>
+        <div id="idCardContainer" class="mt-6 hidden">
+            <img id="idCardImage" class="mx-auto mb-4 rounded shadow" alt="ID Card" />
+            <a id="downloadBtn" download class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+                Download ID Card
+            </a>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('codeForm');
+        const codeInput = document.getElementById('codeInput');
+        const alertBox = document.getElementById('alert');
+        const idCardContainer = document.getElementById('idCardContainer');
+        const idCardImage = document.getElementById('idCardImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        function showAlert(message, type = 'success') {
+            alertBox.textContent = message;
+            alertBox.className = `p-3 mb-4 rounded text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            alertBox.classList.remove('hidden');
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 4000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = codeInput.value.trim().toUpperCase();
+
+            const response = await fetch('/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showAlert('Code accepted! Here is your ID card.', 'success');
+                idCardImage.src = result.imageUrl;
+                downloadBtn.href = result.imageUrl;
+                idCardContainer.classList.remove('hidden');
+            } else {
+                showAlert(result.message, 'error');
+                idCardContainer.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
