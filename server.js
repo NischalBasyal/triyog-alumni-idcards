@@ -1,16 +1,12 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON and serve static files
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Hardcoded mapping of codes to image paths
-// In production, this could come from a database or JSON file
 const codeMap = {
     'K9X7B2': 'id_cards/Nischal_Basyal.png',
     'M4Q2Z8': 'id_cards/Sambridha_Shrestha.png',
@@ -28,19 +24,18 @@ const codeMap = {
     'F9J5R2': 'id_cards/Awani_Nepal.png',
     'W3Y7B8': 'id_cards/Binit_Gurung.png',
     'P2K9T6': 'id_cards/Pavani_Limbu.png',
-    'E4S8H5': 'id_cards/Anuska_Acharya.png'
+    'E4S8H5': 'id_cards/Anuska_Acharya.png',
+    'P5434G': 'id_cards/Pratik_Gurung.png'
 };
 
-
-// Route: validate code and return image path if valid
+// Validate code and return secure image endpoint
 app.post('/validate', (req, res) => {
     const { code } = req.body;
     if (!code || code.length !== 6) {
         return res.status(400).json({ success: false, message: 'Invalid code! try again.' });
     }
 
-    const imagePath = codeMap[code];
-    if (!imagePath) {
+    if (!codeMap[code]) {
         return res.status(404).json({ success: false, message: 'Invalid code! try again.' });
     }
 
@@ -50,7 +45,7 @@ app.post('/validate', (req, res) => {
     });
 });
 
-// Route: serve ID card images
+// Serve image only if code is valid
 app.get('/id/:code', (req, res) => {
     const { code } = req.params;
     const imagePath = codeMap[code];
@@ -60,7 +55,6 @@ app.get('/id/:code', (req, res) => {
     res.sendFile(path.join(__dirname, imagePath));
 });
 
-// Start server
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
